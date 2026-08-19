@@ -4,7 +4,7 @@
  */
 window.APP_CONFIG = {
   // 后端服务地址（Render 部署后填入）
-  BACKEND_URL: 'https://fansky-api.onrender.com',
+  BACKEND_URL: 'https://my-backend-6418.onrender.com',
 
   // 轮询间隔（毫秒）
   POLL_INTERVAL: 3000,
