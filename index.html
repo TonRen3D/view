@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>创意服务站 - 虚拟商品自动发货</title>
+  <meta name="description" content="扫码付款，自动发货，安全便捷的虚拟服务购买平台，支持微信支付和支付宝">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* 支付渠道切换 */
+    .channel-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      justify-content: center;
+    }
+    .channel-tab {
+      flex: 1;
+      max-width: 240px;
+      padding: 16px 20px;
+      border: 2px solid #e8e8e8;
+      border-radius: 12px;
+      background: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .channel-tab:hover {
+      border-color: #07c160;
+      transform: translateY(-2px);
+    }
+    .channel-tab.active {
+      border-color: #07c160;
+      background: #f0fff4;
+    }
+    .channel-tab.alipay.active {
+      border-color: #1677ff;
+      background: #e6f4ff;
+    }
+    .channel-tab.alipay:hover {
+      border-color: #1677ff;
+    }
+    .channel-icon {
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+    .channel-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+    }
+    .channel-desc {
+      font-size: 12px;
+      color: #999;
+      margin-top: 4px;
+    }
+    .channel-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-top: 6px;
+    }
+    .channel-badge.wechat {
+      background: #07c160;
+      color: #fff;
+    }
+    .channel-badge.alipay {
+      background: #1677ff;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部导航 -->
+  <header class="navbar">
+    <div class="container nav-inner">
+      <div class="logo">
+        <span class="logo-icon">✨</span>
+        <span>创意服务站</span>
+      </div>
+      <nav>
+        <a href="#services">服务商品</a>
+        <a href="#how-it-works">购买流程</a>
+        <a href="#faq">常见问题</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero 区域 -->
+  <section class="hero">
+    <div class="container">
+      <h1>专业虚拟服务，一键获取</h1>
+      <p class="subtitle">扫码付款 · 自动发货 · 无需注册 · 安全可靠</p>
+      <div class="hero-badges">
+        <span class="badge">🔒 安全支付</span>
+        <span class="badge">⚡ 即时交付</span>
+        <span class="badge">📦 自动发货</span>
+        <span class="badge">💳 微信/支付宝</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 价格档位选择 -->
+  <section id="services" class="services">
+    <div class="container">
+      <h2>选择支付方式与价格档位</h2>
+      <p class="section-desc">先选择支付渠道，再选择价格档位，系统将随机分配对应商品，扫码付款后自动发货</p>
+
+      <!-- 支付渠道选择 -->
+      <div class="channel-tabs">
+        <div class="channel-tab active" data-channel="fansky" onclick="selectChannel('fansky')">
+          <div class="channel-icon">💚</div>
+          <div class="channel-name">微信支付</div>
+          <div class="channel-desc">Fansky 粉丝创意平台</div>
+          <span class="channel-badge wechat">推荐</span>
+        </div>
+        <div class="channel-tab alipay" data-channel="azz" onclick="selectChannel('azz')">
+          <div class="channel-icon">💙</div>
+          <div class="channel-name">支付宝</div>
+          <div class="channel-desc">爱赞助创作者平台</div>
+          <span class="channel-badge alipay">新上线</span>
+        </div>
+      </div>
+
+      <!-- 价格档位网格 -->
+      <div id="price-tier-grid" class="price-tier-grid">
+        <div class="loading-products">正在加载价格档位...</div>
+      </div>
+      <p class="tier-tip">💡 同一价格档位包含多种商品，系统将随机分配，确保库存充足</p>
+    </div>
+  </section>
+
+  <!-- 购买流程 -->
+  <section id="how-it-works" class="how-it-works">
+    <div class="container">
+      <h2>购买流程</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>选择支付方式</h3>
+          <p>选择微信支付或支付宝渠道</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>选择价格档位</h3>
+          <p>选择你需要的虚拟服务或资源价格</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>扫码支付</h3>
+          <p>使用对应APP扫描二维码完成付款</p>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <h3>自动发货</h3>
+          <p>支付成功后自动弹出下载链接和提取码</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 常见问题 -->
+  <section id="faq" class="faq">
+    <div class="container">
+      <h2>常见问题</h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <h3>Q: 付款后多久能收到商品？</h3>
+          <p>A: 支付成功后系统会自动检测并立即弹出下载链接，通常在 10 秒内完成交付。</p>
+        </div>
+        <div class="faq-item">
+          <h3>Q: 链接失效了怎么办？</h3>
+          <p>A: 请务必在交付页面截图保存。如遇链接失效，请通过页面底部联系方式提供订单号查询。</p>
+        </div>
+        <div class="faq-item">
+          <h3>Q: 支持哪些支付方式？</h3>
+          <p>A: 目前支持微信支付（Fansky平台）和支付宝（爱赞助平台），两个渠道独立运行。</p>
+        </div>
+        <div class="faq-item">
+          <h3>Q: 需要注册账号吗？</h3>
+          <p>A: 不需要。本平台支持匿名购买，无需注册登录即可完成交易。</p>
+        </div>
+        <div class="faq-item">
+          <h3>Q: 两个渠道有什么区别？</h3>
+          <p>A: 微信渠道由 Fansky 平台提供收款，支付宝渠道由爱赞助平台提供收款。商品内容和交付方式一致，可任选其一。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2026 创意服务站. 基于 Fansky + 爱赞助 双平台构建</p>
+      <p class="footer-contact">联系邮箱: your@email.com</p>
+    </div>
+  </footer>
+
+  <!-- ========== 支付弹窗 ========== -->
+  <div id="payment-modal" class="modal-overlay" style="display:none;">
+    <div class="modal payment-modal">
+      <button class="modal-close" onclick="closePaymentModal()">&times;</button>
+      <h3 id="payment-product-name">商品名称</h3>
+      <p id="payment-product-price" class="price">¥0.00</p>
+      <div id="qr-container" class="qr-container">
+        <div class="loading">正在生成付款码...</div>
+      </div>
+      <p class="qr-tip" id="qr-tip-text">请使用微信扫码支付</p>
+      <div id="payment-status" class="payment-status">
+        <span class="status-dot"></span>
+        <span id="status-text">等待付款...</span>
+      </div>
+      <div id="order-info" class="order-info" style="display:none;">
+        <span>订单号: <span id="order-no">-</span></span>
+      </div>
+      <button class="cancel-btn" onclick="closePaymentModal()">取消支付</button>
+    </div>
+  </div>
+
+  <!-- ========== 交付弹窗（支付成功） ========== -->
+  <div id="delivery-modal" class="modal-overlay" style="display:none;">
+    <div class="modal delivery-modal">
+      <button class="modal-close" onclick="closeDeliveryModal()">&times;</button>
+      <div class="success-animation">
+        <div class="success-circle">
+          <svg viewBox="0 0 52 52">
+            <circle class="success-circle-bg" cx="26" cy="26" r="25" fill="none"/>
+            <path class="success-check" fill="none" d="M14 27l7 7 16-16"/>
+          </svg>
+        </div>
+        <h2 class="success-title">支付成功！</h2>
+      </div>
+      <div class="delivery-product">
+        <h3 id="delivery-product-name">商品名称</h3>
+        <p id="delivery-product-price" class="price">¥0.00</p>
+      </div>
+      <div class="delivery-section">
+        <label>下载链接</label>
+        <div class="link-box">
+          <input type="text" id="download-link-input" readonly>
+          <button class="copy-btn" onclick="copyToClipboard('download-link-input')">复制</button>
+        </div>
+        <a id="download-link-btn" class="download-btn" href="#" target="_blank">立即下载</a>
+      </div>
+      <div class="delivery-section" id="extract-code-section" style="display:none;">
+        <label>提取码</label>
+        <div class="link-box">
+          <input type="text" id="extract-code-input" readonly>
+          <button class="copy-btn" onclick="copyToClipboard('extract-code-input')">复制</button>
+        </div>
+      </div>
+      <div class="screenshot-warning">
+        <div class="warning-icon">⚠️</div>
+        <div class="warning-text">
+          <strong>重要提醒</strong>
+          <p>请务必截图保存当前页面！关闭后将无法再次查看下载链接。</p>
+        </div>
+      </div>
+      <button class="screenshot-btn" onclick="triggerScreenshot()">📸 点击截图保存</button>
+      <div class="delivery-order">
+        <span>订单号: <span id="delivery-order-no">-</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 截图提示浮层 -->
+  <div id="screenshot-overlay" class="screenshot-overlay" style="display:none;">
+    <div class="screenshot-frame">
+      <div class="screenshot-corner top-left"></div>
+      <div class="screenshot-corner top-right"></div>
+      <div class="screenshot-corner bottom-left"></div>
+      <div class="screenshot-corner bottom-right"></div>
+      <p>请使用手机截图功能保存此页面</p>
+      <button onclick="closeScreenshotOverlay()">我已截图</button>
+    </div>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div id="toast" class="toast" style="display:none;"></div>
+
+  <!-- 二维码生成库（将支付链接转成二维码图片） -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
