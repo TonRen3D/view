@@ -28,7 +28,8 @@ function selectChannel(channel) {
   });
   // 重新加载价格档位
   loadPriceTiers();
-  console.log('[App] 切换支付渠道:', channel === 'fansky' ? '微信支付(Fansky)' : '支付宝(爱赞助)');
+  const channelNames = { fansky: '微信支付(Fansky)', azz: '支付宝(爱赞助)', afdian: '微信支付(爱发电)' };
+  console.log('[App] 切换支付渠道:', channelNames[channel] || channel);
 }
 
 // ============================================================
@@ -173,10 +174,18 @@ function generateQRCodeImage(text, size = 200) {
       console.warn('[QR] qrcode-generator 库未加载');
       return null;
     }
+    if (!text) {
+      console.warn('[QR] 二维码内容为空');
+      return null;
+    }
     const qr = qrcode(0, 'M');
     qr.addData(text);
     qr.make();
-    return qr.createDataURL(size, size);
+    // createDataURL(cellSize, margin) - 第二个参数是边距，不是尺寸
+    // 计算合适的 cellSize 使总尺寸接近 size
+    const moduleCount = qr.getModuleCount();
+    const cellSize = Math.max(1, Math.floor(size / (moduleCount + 8))); // 8 = margin*2
+    return qr.createDataURL(cellSize, 4);
   } catch (err) {
     console.error('[QR] 生成二维码失败:', err);
     return null;
