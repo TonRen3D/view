@@ -121,20 +121,56 @@ async function handleBuyTier(price, displayName, icon) {
   // 显示支付弹窗
   openPaymentModal(displayName, price, isAzz);
 
-  // 统一后端下单模式
-  try {
-    const apiPath = isAzz ? '/api/azz/orders' : isAfdian ? '/api/afdian/orders' : '/api/orders';
-    const res = await fetchWithTimeout(BACKEND_URL + apiPath, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ price }),
-    }, 15000);
-    const data = await res.json();
+  // 统一后端下单模式（支持自动重试）
+  const apiPath = isAzz ? '/api/azz/orders' : isAfdian ? '/api/afdian/orders' : '/api/orders';
+  let data = null;
+  const maxAttempts = 2;
 
-    if (data.code !== 0 || !data.data) {
-      showPaymentError(data.error || '创建订单失败，请稍后重试');
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      if (attempt > 1) {
+        document.getElementById('qr-container').innerHTML = '<div class="loading">第' + attempt + '次重试创建订单...</div>';
+        await new Promise(r => setTimeout(r, 1500));
+      }
+      const res = await fetchWithTimeout(BACKEND_URL + apiPath, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ price }),
+      }, 20000);
+      data = await res.json();
+
+      if (data.code === 0 && data.data) {
+        break; // 成功
+      }
+
+      // 失败，判断是否需要重试
+      const errMsg = data.error || '';
+      const shouldRetry = attempt < maxAttempts && (
+        errMsg.includes('401') || errMsg.includes('登录') || errMsg.includes('log in') ||
+        errMsg.includes('无法连接') || errMsg.includes('timeout') || data.code === -1
+      );
+
+      if (!shouldRetry) {
+        showPaymentError(errMsg || '创建订单失败，请稍后重试');
+        return;
+      }
+      console.log(`[Order] 第${attempt}次创建订单失败: ${errMsg}，准备重试...`);
+    } catch (err) {
+      console.error('下单失败:', err);
+      if (attempt < maxAttempts) {
+        document.getElementById('qr-container').innerHTML = '<div class="loading">网络异常，第' + attempt + '次重试...</div>';
+        await new Promise(r => setTimeout(r, 2000));
+        continue;
+      }
+      showPaymentError('无法连接到服务器。如果是首次访问，Render 免费版可能正在唤醒（需 30-60 秒），请稍后重试。');
       return;
     }
+  }
+
+  if (!data || data.code !== 0 || !data.data) {
+    showPaymentError('创建订单失败，请稍后重试');
+    return;
+  }
 
     const order = data.data;
     currentOrderId = order.internalOrderId;
@@ -159,10 +195,6 @@ async function handleBuyTier(price, displayName, icon) {
     renderPaymentQR(order, isAzz);
 
     startPolling(order.internalOrderId, isAzz, isAfdian);
-  } catch (err) {
-    console.error('下单失败:', err);
-    showPaymentError('无法连接到服务器。如果是首次访问，Render 免费版可能正在唤醒（需 30-60 秒），请稍后重试。');
-  }
 }
 
 // ============================================================
@@ -215,7 +247,7 @@ function renderPaymentQR(order, isAlipay) {
   if (order.qrCodeDataUrl) {
     // 后端已返回 base64 图片
     qrImageHtml = `<img src="${order.qrCodeDataUrl}" alt="${platformName}二维码" class="qr-image" />`;
-  } else if (order.qrCodeUrl && !order.qrIsPage) {
+  } else if (order.qrCodeUrl && !order.qrIsPage && !order.qrIsProtocol) {
     // 后端返回直接图片 URL
     qrImageHtml = `<img src="${order.qrCodeUrl}" alt="${platformName}二维码" class="qr-image" onerror="this.parentElement.innerHTML='<div class=\'qr-placeholder qr-placeholder-${platform}\'><div class=\'qr-placeholder-icon\'>${isAlipay ? '💙' : '💚'}</div><div class=\'qr-placeholder-text\'>${platformName}支付</div><div class=\'qr-placeholder-hint\'>点击下方按钮打开${platformName}</div></div>'" />`;
   } else if (needGenerateQR && jumpUrl) {
