@@ -110,6 +110,80 @@ function renderPriceTiers(tiers) {
 }
 
 // ============================================================
+//  统一购买流程（支持 Fansky / 爱赞助 / 爱发电）
+// ============================================================
+async function handleBuyTier(price, displayName, icon) {
+  currentTier = { price, displayName, icon };
+  const isAzz = currentChannel === 'azz';
+  const isAfdian = currentChannel === 'afdian';
+
+  // 显示支付弹窗
+  openPaymentModal(displayName, price, isAzz);
+
+  // 统一后端下单模式
+  try {
+    const apiPath = isAzz ? '/api/azz/orders' : isAfdian ? '/api/afdian/orders' : '/api/orders';
+    const res = await fetchWithTimeout(BACKEND_URL + apiPath, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ price }),
+    }, 15000);
+    const data = await res.json();
+
+    if (data.code !== 0 || !data.data) {
+      showPaymentError(data.error || '创建订单失败，请稍后重试');
+      return;
+    }
+
+    const order = data.data;
+    currentOrderId = order.internalOrderId;
+
+    document.getElementById('order-info').style.display = 'block';
+    // 订单号显示：爱赞助用 azzOrderId，爱发电用 outTradeNo，Fansky 用 fanskyTradeNo
+    const orderNo = order.azzOrderId || order.outTradeNo || order.fanskyTradeNo || order.orderId || '';
+    document.getElementById('order-no').textContent = orderNo;
+
+    if (order.productName) {
+      document.getElementById('payment-product-name').textContent = order.productName;
+    }
+
+    // 统一渲染二维码 + 点击跳转按钮
+    // 检查是否有可用的二维码信息
+    const hasQR = order.qrCodeDataUrl || order.qrCodeUrl || order.instructionsUrl || order.redirectUrl;
+    if (!hasQR) {
+      const errMsg = order.stripeError || '获取支付二维码失败';
+      showPaymentError(errMsg + '（订单已创建，可稍后重试）');
+      return;
+    }
+    renderPaymentQR(order, isAzz);
+
+    startPolling(order.internalOrderId, isAzz, isAfdian);
+  } catch (err) {
+    console.error('下单失败:', err);
+    showPaymentError('无法连接到服务器。如果是首次访问，Render 免费版可能正在唤醒（需 30-60 秒），请稍后重试。');
+  }
+}
+
+// ============================================================
+//  二维码生成工具（使用 qrcode-generator 库）
+// ============================================================
+function generateQRCodeImage(text, size = 200) {
+  try {
+    if (typeof qrcode === 'undefined') {
+      console.warn('[QR] qrcode-generator 库未加载');
+      return null;
+    }
+    const qr = qrcode(0, 'M');
+    qr.addData(text);
+    qr.make();
+    return qr.createDataURL(size, size);
+  } catch (err) {
+    console.error('[QR] 生成二维码失败:', err);
+    return null;
+  }
+}
+
+// ============================================================
 
 function renderPaymentQR(order, isAlipay) {
   const container = document.getElementById('qr-container');
@@ -277,9 +351,6 @@ function stopPolling() {
   }
 }
 
-/**
- * 爱赞助前端轮询订单状态（直接调用爱赞助API，使用访客IP）
- */
 // ============================================================
 function handlePaymentSuccess(orderData) {
   closePaymentModal();
